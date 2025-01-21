@@ -1,0 +1,7 @@
+Usage:
+
+    vy <commands> [arguments]
+
+The commands are:
+    date              show date and time
+    upcnf             upload the current settings to --> OneDrive
