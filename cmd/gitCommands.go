@@ -6,9 +6,9 @@ import (
 	"os/exec"
 )
 
-func Commit(message string) string {
+func CommitAndStage(message string) string {
 	gitInit()
-	// check if all the changes committed or not!
+	// check if all the changes staged or not!
 	cmd := exec.Command("git", "add", ".")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
@@ -18,6 +18,7 @@ func Commit(message string) string {
 		err, stdout.String(), stderr.String())
 	}
 	
+	// commit the changes
 	cmd = exec.Command("git", "commit", "-m", message)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -25,7 +26,7 @@ func Commit(message string) string {
 		return fmt.Sprintf("commit error: %w\nOutput: %s\nError: %s",
 		err, stdout.String(), stderr.String())
 	}
-	return "changes has been Staged and Committed"
+	return "all changes has been Staged and Committed :)"
 }
 
 // this will initialize the git repository

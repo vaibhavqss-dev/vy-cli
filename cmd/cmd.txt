@@ -5,6 +5,10 @@ Usage:
 The commands are:
     date              show date and time
     backup            backup all the settings, config, preferances to OneDrive
+    commit            stage and commit ALL the changes in repo, 
+                      example:
+                        vy commit "first commit"
+                        (must add message with double inverted comma!)
 
 arguments:
     -v                verbose mode

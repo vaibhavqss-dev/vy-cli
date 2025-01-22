@@ -47,7 +47,7 @@ func main() {
 			os.Exit(0)
 		}
 		// Get the commit message
-		msg := cmd.Commit(os.Args[2])
+		msg := cmd.CommitAndStage(os.Args[2])
 		fmt.Println(msg)
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
