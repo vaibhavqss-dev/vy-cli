@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
 	"github.com/vaibhavyadav-dev/vy-cli/cmd"
 )
 
@@ -21,10 +20,12 @@ func main() {
 			os.Exit(1)
 		}
 		cmd.PrintRainbowGlowLargeText("Vaibhav Yadav")
-		fmt.Println("Command line tool made for and by VAIBHAV YADAV")
+		fmt.Println("Command line made For and By VAIBHAV YADAV")
 		fmt.Println(cmdFile)
+		
 		os.Exit(1)
 	}
+
 
 	command := os.Args[1]
 
@@ -32,7 +33,22 @@ func main() {
 	case "date":
 		fmt.Println(cmd.Date())
 	case "backup":
-		cmd.HandleBackup(os.Args[2:])
+		if len(os.Args) == 2 {
+			cmd.HandleBackup(false)
+		} else if len(os.Args) == 3 && os.Args[2] == "-v" { 
+			cmd.HandleBackup(true)
+		} else {
+			fmt.Println("Invalid usage. Use 'backup' or 'backup -v' for verbose output")
+			os.Exit(0)
+		}
+	case "commit":
+		if len(os.Args) < 3{
+			fmt.Println("Please provide commit message")
+			os.Exit(0)
+		}
+		// Get the commit message
+		msg := cmd.Commit(os.Args[2])
+		fmt.Println(msg)
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println(cmdFile)

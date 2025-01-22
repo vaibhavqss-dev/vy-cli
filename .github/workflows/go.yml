@@ -22,12 +22,11 @@ jobs:
 
     - name: Commit and push binary
       run: |
-        # Move the binary to a directory (e.g., ./bin)
 
         # Set Git configuration for actions user
-        git config --global user.name "github-actions"
+        git config --global user.name "BOT"
         git config --global user.email "github-actions@github.com"
-
+  
         # Stage and commit the binary
         git add .
         git commit -m "Add built Go binary"

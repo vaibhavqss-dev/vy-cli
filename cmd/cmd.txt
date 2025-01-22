@@ -4,4 +4,8 @@ Usage:
 
 The commands are:
     date              show date and time
-    upcnf             upload the current settings to --> OneDrive
+    backup            backup all the settings, config, preferances to OneDrive
+
+arguments:
+    -v                verbose mode
+
