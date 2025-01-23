@@ -6,11 +6,22 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
-func HandleBackup(verbose bool) {
-	// Check if rclone is installed and configured
-	err := checkRcloneInstallation()
+func HandleBackup(verbose bool, absLocalFilePath, drive string) {
+
+	// Check if the localFilePath is a empty string
+	// If it is, upload the whole folder and it's content and return
+	isFolder := len(strings.TrimSpace(absLocalFilePath)) > 0
+	if isFolder {
+		uploadFolder(absLocalFilePath, drive, verbose)
+		return;
+	}		
+
+
+	// Check if rclone is installed and configured														
+	err := checkRcloneInstallation(drive)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -88,8 +99,7 @@ func HandleBackup(verbose bool) {
 	successCount := 0
 	totalFiles := len(filesToBackup)
 	
-	fmt.Println("Please wait.... I'm Uploading files to OneDrive.....\nThis Will Take Time Depending Upon Speed of Internet and Size of Folder :) ...")
-	
+	fmt.Printf("Please wait.... I'm Uploading files to %s.....\nThis Will Take Time Depending Upon Speed of Internet and Size of Folder :) ...", drive)
 	if(verbose){
 		fmt.Println("Starting Ubuntu settings backup...")
 		fmt.Printf("Total configurations to backup: %d\n\n", totalFiles)
@@ -103,11 +113,10 @@ func HandleBackup(verbose bool) {
 		}
 
 		if(verbose){
-			fmt.Printf("📤 Uploading %s to OneDrive... ", name)
+			fmt.Printf("📤 Uploading %s to %s... ", name, drive)
 		}
 
-
-		err = rclone(path, filepath.Join(backupDir, name))
+		err = rclone(path, filepath.Join(backupDir, name), drive)
 		if err != nil {
 			fmt.Printf("❌ Failed\n  Error: %v\n\n", err)
 			continue
@@ -123,19 +132,40 @@ func HandleBackup(verbose bool) {
 	fmt.Printf("Backup completed! Successfully backed up %d of %d configurations\n", successCount, totalFiles)
 }
 
-func rclone(localFilePath, destinationPath string) error {
+// Upload a folder to the specified drive using rclone
+func uploadFolder(folder, drive string, verbose bool) {
+	if verbose {
+		fmt.Printf("📤 Uploading folder (Local) %s to %s...\n", folder, drive)
+	}
+
+	folderName := filepath.Base(folder)
+	remoteDir := filepath.Join("Backups", folderName)
+	
+	err := rclone(folder, remoteDir, drive)
+	if err != nil {
+		fmt.Printf("❌ Failed to upload folder (Local): %v\n", err)
+		return
+	}
+
+
+	if verbose {
+		fmt.Printf("✅ Successfully uploaded folder (Local) %s\n", folder)
+	}
+}
+
+// Upload a file to the specified drive using rclone
+			// localpath:  //remotePath		//driveName (oneDrive, googleDrive e.t.c)
+func rclone(localFilePath, remotePath, drive string) error {
 	// Check if the destination directory exists, if not create it
-	checkCmd := exec.Command("rclone", "lsf", "ubuntuSettings_onedrive:"+filepath.Dir(destinationPath))
+	checkCmd := exec.Command("rclone", "lsf", drive+filepath.Dir(remotePath))
 	if err := checkCmd.Run(); err != nil {
-		mkdirCmd := exec.Command("rclone", "mkdir", "ubuntuSettings_onedrive:"+filepath.Dir(destinationPath))
+		mkdirCmd := exec.Command("rclone", "mkdir", drive+filepath.Dir(remotePath))
 		if err := mkdirCmd.Run(); err != nil {
 			return fmt.Errorf("failed to create directory: %w", err)
 		}
 	}
 
-	// Proceed with the file copy
-	cmd := exec.Command("rclone", "copy", localFilePath, "ubuntuSettings_onedrive:"+destinationPath, "--progress")
-
+	cmd := exec.Command("rclone", "copy", localFilePath, drive+remotePath, "--progress")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -145,26 +175,24 @@ func rclone(localFilePath, destinationPath string) error {
 		return fmt.Errorf("rclone error: %w\nOutput: %s\nError: %s",
 			err, stdout.String(), stderr.String())
 	}
-
 	return nil
 }
 
-func checkRcloneInstallation() error {
+// Check if rclone is installed and configured with the specified drive
+func checkRcloneInstallation(drive string) error {
 	// Check if rclone is installed
 	_, err := exec.LookPath("rclone")
 	if err != nil {
-		return fmt.Errorf("rclone is not installed. Please install it using:\n" +
-			"curl https://rclone.org/install.sh | sudo bash\n" +
-			"Then authenticate with: rclone config")
+		return fmt.Errorf("rclone is not installed. Please install it using:\ncurl https://rclone.org/install.sh | sudo bash\nThen authenticate with: rclone config")
 	}
 
-	// Check if rclone is configured with ubuntuSettings_onedrive
+	// Check if rclone is configured with drive or not
 	cmd := exec.Command("rclone", "listremotes")
 	output, err := cmd.Output()
-	if err != nil || !bytes.Contains(output, []byte("ubuntuSettings_onedrive:")) {
-		return fmt.Errorf("rclone is not configured with ubuntuSettings_onedrive.\n" +
-			"Please run 'rclone config' and set up your OneDrive connection")
+	if err != nil || !bytes.Contains(output, []byte(drive)) {
+		return fmt.Errorf("rclone is not configured with %s.\nPlease run 'rclone config' and set up your OneDrive connection", drive)
 	}
-
 	return nil
 }
+
+

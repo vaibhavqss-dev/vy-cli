@@ -3,9 +3,9 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"log"
 	"os"
 	"github.com/vaibhavyadav-dev/vy-cli/cmd"
+	"github.com/vaibhavyadav-dev/vy-cli/cmd/sysconfig"
 )
 
 //go:embed cmd/cmd.txt
@@ -16,31 +16,52 @@ func main() {
 		if cmdFile == "" {
 			fmt.Println("Seems like package is not successfully installed :(") 
 			fmt.Println("Please install it with default configuration")
-			log.Fatal("cmd.txt content is missing from the binary")
-			os.Exit(1)
+			return
 		}
 		cmd.PrintRainbowGlowLargeText("Vaibhav Yadav")
 		fmt.Println("Command line made For and By VAIBHAV YADAV")
 		fmt.Println(cmdFile)
-		
-		os.Exit(1)
+		return
 	}
-
-
+	
 	command := os.Args[1]
 
 	switch command {
 	case "date":
 		fmt.Println(cmd.Date())
 	case "backup":
-		if len(os.Args) == 2 {
-			cmd.HandleBackup(false)
-		} else if len(os.Args) == 3 && os.Args[2] == "-v" { 
-			cmd.HandleBackup(true)
-		} else {
-			fmt.Println("Invalid usage. Use 'backup' or 'backup -v' for verbose output")
-			os.Exit(0)
+		drive := fmt.Sprintf("gdrive:")
+		verbose := false
+		folder := fmt.Sprintf("")
+
+		for i := 0; i < len(os.Args); i++ {
+
+			// Check if the user has provided the folder to backup
+			if os.Args[i] == "-f" && i+1 < len(os.Args) {
+				// get absolute path of the folder
+				currentDir, err := os.Getwd()
+				if err != nil {
+					fmt.Printf("Error getting current directory: %v\n", err)
+					return
+				}
+				folder = fmt.Sprintf("%s/%s", currentDir, os.Args[i+1])
+				continue
+			}
+
+			if os.Args[i] == "-v" {
+				verbose = true
+				continue;
+			}
+
+			if i+1 < len(os.Args) && os.Args[i] == "-d" {
+				drive = fmt.Sprintf("%s:", os.Args[i+1])
+				continue;	
+			}
 		}
+		
+		fmt.Println("Selected Drive: ", drive)
+		fmt.Println("Selected Drive: ", folder)
+		cmd.HandleBackup(verbose, folder, drive)
 	case "commit":
 		if len(os.Args) < 3{
 			fmt.Println("Please provide commit message")
@@ -49,6 +70,17 @@ func main() {
 		// Get the commit message
 		msg := cmd.CommitAndStage(os.Args[2])
 		fmt.Println(msg)
+	case "stlng":
+		if len(os.Args) == 2 {
+			sysconfig.SetupGoNodePython()
+		}else{
+			fmt.Println("Invalid usage. Use 'setlang' to setup Go, Node and Python")
+			os.Exit(0)
+		}
+	case "rfh":
+		sysconfig.Refresh()
+	case "help":
+		fmt.Println(cmdFile)	
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println(cmdFile)

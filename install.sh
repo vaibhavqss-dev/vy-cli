@@ -26,7 +26,7 @@ echo "Building the project..."
 go build -o vy main.go
 
 # Move the binary to /usr/local/bin
-echo "Installing vy CLI globally..."
+echo "Installing vy Command line globally..."
 sudo cp vy $INSTALL_PATH/
 
 echo "vy has been installed. You can now run it from anywhere."
