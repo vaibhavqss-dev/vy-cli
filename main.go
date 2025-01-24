@@ -4,12 +4,19 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
-	"github.com/vaibhavyadav-dev/vy-cli/cmd"
-	"github.com/vaibhavyadav-dev/vy-cli/cmd/sysconfig"
+	"strconv"
+
+	"github.com/vaibhavyadav-dev/vy-cli/src"
+	"github.com/vaibhavyadav-dev/vy-cli/src/sysconfig"
+
+	// Load the .env file
+	"github.com/joho/godotenv"
 )
 
-//go:embed cmd/cmd.txt
-var cmdFile string // Embed the cmd.txt file
+//go:embed src/cmd.txt
+var cmdFile string
+//go:embed .env
+var embeddedEnv string
 
 func main() {
 	if len(os.Args) < 2 {
@@ -24,15 +31,35 @@ func main() {
 		return
 	}
 	
+	// Write the embedded .env content to a temporary file
+	tmpFile, err := os.CreateTemp("", "embedded-env-*.env")
+	if err != nil {
+		fmt.Println("Error creating temp file:", err)
+		return
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.Write([]byte(embeddedEnv)); err != nil {
+		fmt.Println("Error writing to temp file:", err)
+		return
+	}
+	tmpFile.Close()
+
+	// Load the .env file from the temporary location
+	if err := godotenv.Load(tmpFile.Name()); err != nil {
+		fmt.Println("Error loading .env file")
+		return
+	}
+	
 	command := os.Args[1]
 
-	switch command {
+	switch command {	
 	case "date":
 		fmt.Println(cmd.Date())
 	case "backup":
-		drive := fmt.Sprintf("gdrive:")
+		drive := "gdrive:"
 		verbose := false
-		folder := fmt.Sprintf("")
+		folder := ""
 
 		for i := 0; i < len(os.Args); i++ {
 
@@ -79,8 +106,13 @@ func main() {
 		}
 	case "rfh":
 		sysconfig.Refresh()
+	case "weather":
+		lat, _ := strconv.ParseFloat(os.Getenv("LATITUDE_S63_H149"), 64)
+		long, _ := strconv.ParseFloat(os.Getenv("LONGITUDE_S63_H149"), 64)
+		fmt.Printf("Location: %s\n", os.Getenv("S63_H149"))
+		cmd.GetWeatherData(lat, long)
 	case "help":
-		fmt.Println(cmdFile)	
+		fmt.Println(cmdFile)
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println(cmdFile)
