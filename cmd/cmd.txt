@@ -5,11 +5,11 @@ Usage:
 The commands are:
     date              show date and time
     backup            backup all the settings, config, preferances to OneDrive
-                      
-                      vy-cli backup [-v] [-f folder] [-d drive]
-                      [-v]: Verbose mode
-                      [-f]: Folder, location absolute path, to backup
-                      [-d]: Drive to backup to
+    
+                      vy backup [-v: <VERBOSE>] [-f: <FOLDER_NAME>] [-d: <DRIVE_NAME>]
+                      [-v]: verbose mode
+                      [-f]: folder, location absolute path, to backup
+                      [-d]: drive to backup to
                       
                       This will take name of folder, currently only folders are supported!
     
@@ -30,12 +30,12 @@ The commands are:
                             -n: name of File or Folder
                             -s: size of file (defaults to 0 MB)
                             -h: perform hard search (all files and folder will be searched) (defaults to false)
+                        --type: type of file to search, till now, only this arguments is supported. 
 
     sysinfo           show system information like memory, storage, CPU, processes with beautiful
                       tables
 
     weather           fetch all the weather data, like AQI, sunrise, sunset etc
-
     rfh               update and upgrade the system (-y is already included in command)
     stlng             install Go(v1.22.11), Python(v3.10.12), Node(v22.13.1), skip if already installed
     help              displays help profile

@@ -137,9 +137,16 @@ func main() {
 		fileName := ""
 		fileSize := 0
 		hardSearch := false
+		fileType := ""
 		
 		for i:= 2; i < len(os.Args); i++ {
 			switch expression := os.Args[i]; expression {	
+			case "--type":
+				if i+1 < len(os.Args) {
+					fileType = os.Args[i+1]
+					i++;
+				}
+				feature.FindFileFolder(fileType, fileName, fileSize, hardSearch)
 			case "-n":
 				if i+1 < len(os.Args) {
 					fileName = os.Args[i+1]
@@ -156,7 +163,7 @@ func main() {
 				log.Fatalf("Invalid flag: %s", expression)
 			}
 		}
-		feature.FindFile(fileName, fileSize, hardSearch)
+		feature.FindFileFolder("", fileName, fileSize, hardSearch)
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println(cmdFile)
